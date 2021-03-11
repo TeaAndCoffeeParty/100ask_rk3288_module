@@ -7,11 +7,7 @@
 #define PIN(x)      (x&0xffff)
 #define GROUP_PIN(g, p) ((g<<16| (p)))
 
-struct led_resource {
-    int pin;
-};
-
-struct led_resource *get_led_resource(void);
+struct resource *get_led_resource(void);
 
 #endif
 

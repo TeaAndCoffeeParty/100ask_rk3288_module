@@ -10,6 +10,6 @@ clean:
 	rm -f hello_drv_test
 
 
-myled_drv-y:=led_drv.o board_demoo.o
-obj-m += myled_drv.o
+#myled_drv-y:=led_drv.o board_demoo.o
+obj-m += board_A_led.o
 
