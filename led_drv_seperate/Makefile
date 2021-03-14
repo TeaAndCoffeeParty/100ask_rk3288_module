@@ -10,6 +10,6 @@ clean:
 	rm -f hello_drv_test
 
 
-myled_drv-y:=led_drv.o board_demoo.o
+myled_drv-y:=led_drv.o board_A_led.o chip_demoo_gpio.o
 obj-m += myled_drv.o
 
