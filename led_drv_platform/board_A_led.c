@@ -21,10 +21,18 @@ struct resource *get_led_resource(void)
     return led_resources;
 }
 
+static void led_dev_release(struct device *pdev)
+{
+
+}
+
 static struct platform_device led_device  = {
-	.name = "myled_device",
+	.name = "myled",
 	.resource = led_resources,
 	.num_resources = ARRAY_SIZE(led_resources),
+	.dev = {
+		.release = led_dev_release,
+	},
 };
 
 static int led_device_init(void)

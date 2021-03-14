@@ -11,5 +11,5 @@ clean:
 
 
 #myled_drv-y:=led_drv.o board_demoo.o
-obj-m += board_A_led.o
+obj-m += board_A_led.o chip_demoo_gpio.o led_drv.o
 

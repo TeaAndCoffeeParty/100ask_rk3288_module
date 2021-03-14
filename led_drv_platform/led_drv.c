@@ -9,10 +9,30 @@
 #include <linux/uaccess.h>
 
 #include "led_ops.h"
+#include "led_drv.h"
 
 static int major = 0;
 static struct class *led_class;
 struct led_operations *p_led_ops;
+
+void led_class_create_device(int index)
+{
+	device_create(led_class, NULL, MKDEV(major, index), NULL, "myled%d", index);
+}
+
+void led_class_destroy_device(int index)
+{
+	device_destroy(led_class, MKDEV(major, index));
+}
+
+void register_led_operations(struct led_operations *led_opr)
+{
+	p_led_ops = led_opr;
+}
+
+EXPORT_SYMBOL(led_class_create_device);
+EXPORT_SYMBOL(led_class_destroy_device);
+EXPORT_SYMBOL(register_led_operations);
 
 static int led_drv_open(struct inode *node, struct file *file)
 {
@@ -63,7 +83,6 @@ static struct file_operations led_drv = {
 static int __init led_drv_init(void)
 {
 	int err;
-	// int i = 0;
 	major = register_chrdev(0, "myled", &led_drv);
 
 	led_class = class_create(THIS_MODULE, "led_class");
@@ -73,11 +92,6 @@ static int __init led_drv_init(void)
 		printk(KERN_WARNING "class creatge failed %d\n", err);
 		return -1;
 	}
-
-
-	p_led_ops = get_board_led_ops();
-	// for(i=0;i<p_led_ops->num;i++)
-		device_create(led_class, NULL, MKDEV(major, 0), NULL, "myled%d", 0);
 	
 	printk("%s %sled_drv_init\n", __FILE__, __FUNCTION__);
 	return 0;
@@ -85,10 +99,7 @@ static int __init led_drv_init(void)
 
 static void __exit led_drv_exit(void)
 {
-	// int i;
 	printk("%s %sled_drv_exit\n", __FILE__, __FUNCTION__);
-	// for(i=0;i<p_led_ops->num;i++)
-		device_destroy(led_class, MKDEV(major, 0));
 
 	class_destroy(led_class); 
 	unregister_chrdev(major, "myled");	
