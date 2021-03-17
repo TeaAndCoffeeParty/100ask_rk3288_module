@@ -1,0 +1,12 @@
+#define GROUP_PIN(g, p) ((g<<16| (p)))
+
+/{
+	myled@0{
+		compatible = "myled,led_drv";
+		pin = <GROUP_PIN(8, 1)>;
+	};
+	myled@1{
+		compatible = "myled,led_drv";
+		pin = <GROUP_PIN(8, 2)>;
+	};
+}
