@@ -89,12 +89,16 @@ static int led_platform_driver_probe(struct platform_device *pdev)
 	int led_pin;
 
 	np = pdev->dev.of_node;
-	if(!np)
+	if(!np) {
+		printk("%s node is null\n", __FUNCTION__);
 		return -1;
+	}
 
 	err = of_property_read_u32(np, "pin", &led_pin);
-	if(err !=0)
+	if(err !=0) {
+		printk("%s of_property_read_u32 return err:%d\n", __FUNCTION__, err);
 		return -1;
+	}
 
 	led_pins[resPinCount] = led_pin;
 	led_class_create_device(resPinCount);

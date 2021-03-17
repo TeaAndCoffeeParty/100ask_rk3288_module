@@ -3,10 +3,10 @@
 /{
 	myled@0{
 		compatible = "myled,led_drv";
-		pin = GROUP_PIN(8, 1);
+		pin = <GROUP_PIN(8, 1)>;
 	};
 	myled@1{
 		compatible = "myled,led_drv";
-		pin = GROUP_PIN(8, 2);
+		pin = <GROUP_PIN(8, 2)>;
 	};
 }
