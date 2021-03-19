@@ -3,6 +3,8 @@
 #include <linux/fs.h>
 #include <linux/device.h>
 
+#include "button_drv.h"
+
 #define  BUTTON_MAJOR 0
 static struct class *button_class;
 
