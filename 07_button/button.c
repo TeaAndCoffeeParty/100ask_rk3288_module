@@ -1,8 +1,10 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/fs.h>
+#include <linux/device.h>
 
 #define  BUTTON_MAJOR 0
+static struct class *button_class;
 
 static int button_open(struct inode *inode, struct file *file)
 {
@@ -35,11 +37,18 @@ static int button_init(void)
         return res;
     }
 
+	button_class = class_create(THIS_MODULE, "button_class");
+	if(!button_class) {
+        printk(KERN_ERR "button class: create failed\n");
+		return -1;
+	}
+
 	return 0;
 }
 
 static void button_exit(void)
 {
+	class_destroy(button_class);
 	unregister_chrdev(BUTTON_MAJOR, "mybutton");
 }
 
