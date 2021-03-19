@@ -2,19 +2,30 @@
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/device.h>
+#include <asm/uaccess.h>
 
 #include "button_drv.h"
 
-#define  BUTTON_MAJOR 0
+int  BUTTON_MAJOR = 0;
+struct button_operations *btn_ops;
 static struct class *button_class;
 
 static int button_open(struct inode *inode, struct file *file)
 {
+	int minor = iminor(inode);
+	btn_ops->init(minor);
 	return 0;
 }
 
 static ssize_t button_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
 {
+	unsigned int minor = iminor(file_inode(file));
+	char level;
+	int err;
+	
+	level = btn_ops->read(minor);
+	err = copy_to_user(buf, &level, 1);
+
 	return 0;
 }
 
@@ -40,10 +51,12 @@ static int button_init(void)
     }
 
 	button_class = class_create(THIS_MODULE, "button_class");
-	if(!button_class) {
+	if(IS_ERR(button_class)) {
         printk(KERN_ERR "button class: create failed\n");
 		return -1;
 	}
+
+	register_button_operations(btn_ops);
 
 	return 0;
 }
