@@ -1,32 +1,36 @@
+#include <linux/init.h>
+#include <linux/module.h>
 #include "button_drv.h"
 
 
-void board_rk3288_button_init_gpio(int which)
+static void board_rk3288_button_init_gpio(int which)
 {
-
+	printk("%s %s %d, init gpio for button %d\n", __FILE__, __FUNCTION__, __LINE__, which);
 }
 
-void board_rk3288_button_exit_gpio(int which)
+static int board_rk3288_button_read_gpio(int which)
 {
-
-{
-
+	printk("%s %s %d, read gpio for button %d\n", __FILE__, __FUNCTION__, __LINE__, which);
+	return 1;
 }
 
 struct button_operations mybutton_ops = {
 	.count = 2,
 	.init = board_rk3288_button_init_gpio,
-	.read = board_rk3288_button_exit_gpio,
-}
+	.read = board_rk3288_button_read_gpio,
+};
 
-void register_button_operations(struct button_operations *ops)
+static int board_rk3288_button_init(void)
 {
-	ops = &mybutton_ops;
+	register_button_operations(&mybutton_ops);
+	return 0;
 }
-EXPORT_SYMBOL(register_button_operations);
 
-void unregister_button_operations(void)
+static void board_rk3288_button_exit(void)
 {
-
+	unregister_button_operations();
 }
-EXPORT_SYMBOL(unregister_button_operations);
+
+module_init(board_rk3288_button_init);
+module_exit(board_rk3288_button_exit);
+MODULE_LICENSE("GPL");

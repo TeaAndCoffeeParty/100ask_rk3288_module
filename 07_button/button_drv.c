@@ -6,7 +6,7 @@
 
 #include "button_drv.h"
 
-int  BUTTON_MAJOR = 0;
+int button_major = 0;
 struct button_operations *btn_ops;
 static struct class *button_class;
 
@@ -26,26 +26,42 @@ static ssize_t button_read(struct file *file, char __user *buf, size_t size, lof
 	level = btn_ops->read(minor);
 	err = copy_to_user(buf, &level, 1);
 
-	return 0;
-}
-
-static int button_release(struct inode *inode, struct file *file)
-{
-	return 0;
+	return 1;
 }
 
 static const struct file_operations button_ops = {
     .owner      = THIS_MODULE,
     .open       = button_open,
     .read       = button_read,
-    .release    = button_release,
 };
+
+void register_button_operations(struct button_operations *ops)
+{
+	int i;
+
+	btn_ops = ops;
+	for(i=0;i<btn_ops->count;i++) {
+		device_create(button_class, NULL, MKDEV(button_major, i), NULL, "mybutton%d", i);
+	}
+}
+
+
+void unregister_button_operations(void)
+{
+	int i;
+	for(i=0;i<btn_ops->count;i++) {
+		device_destroy(button_class, MKDEV(button_major, i));
+	}
+}
+
+EXPORT_SYMBOL(register_button_operations);
+EXPORT_SYMBOL(unregister_button_operations);
 
 static int button_init(void)
 {
 	int res;
-	res = register_chrdev(BUTTON_MAJOR, "mybutton", &button_ops);
-    if (res < 0) {
+	button_major = register_chrdev(0, "mybutton", &button_ops);
+    if (button_major < 0) {
         printk(KERN_ERR "button : couldn't get a major number.\n");
         return res;
     }
@@ -56,15 +72,13 @@ static int button_init(void)
 		return -1;
 	}
 
-	register_button_operations(btn_ops);
-
 	return 0;
 }
 
 static void button_exit(void)
 {
 	class_destroy(button_class);
-	unregister_chrdev(BUTTON_MAJOR, "mybutton");
+	unregister_chrdev(button_major, "mybutton");
 }
 
 module_init(button_init);
