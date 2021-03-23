@@ -1,0 +1,10 @@
+/{
+	myled@0{
+		compatible = "myled,led_drv";
+		pinctrl-names = "defualt";
+		pinctrl-0 = <&pinctrl_leds>;
+		pinctrl_leds: pinctrl-leds {
+			rockchip,pins = <8 1 RK_FUNC_GPIO pcfg_pull_down>
+		};
+	};
+}
