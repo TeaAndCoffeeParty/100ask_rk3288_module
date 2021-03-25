@@ -76,7 +76,7 @@ static const struct of_device_id myleds[] = {
 
 static int chip_demoo_gpio_probe(struct platform_device *pdev)
 {
-	led_gpio = gpiod_get(&pdev->dev, "led", 0);
+	led_gpio = gpiod_get(&pdev->dev, "myled", 0);
 	if(IS_ERR(led_gpio)) {
 		dev_err(&pdev->dev, "Failed to get GPIO for led\n");
 		return PTR_ERR(led_gpio);

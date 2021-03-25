@@ -1,10 +1,18 @@
 /{
-	myled@0{
-		compatible = "myled,led_drv";
-		pinctrl-names = "defualt";
-		pinctrl-0 = <&pinctrl_leds>;
-		pinctrl_leds: pinctrl-leds {
-			rockchip,pins = <8 1 RK_FUNC_GPIO pcfg_pull_down>
-		};
-	};
+	myled_blue: myled-blue {
+        compatible = "myled,led_drv";
+        label = "myled:blue:user";
+        myled-gpio = <&gpio8 1 GPIO_ACTIVE_LOW>;
+        pinctrl-names = "default";
+        pinctrl-0 = <&my_led>;
+    };
+
+&pinctrl {
+    myled_blue {
+        my_led: my-led {
+            rockchip,pins = <8 1 RK_FUNC_GPIO &pcfg_pull_none>;
+        };
+    };
+};
+
 }
