@@ -24,6 +24,7 @@ struct gpio_key {
 static struct gpio_key *myBtn_key;
 static int button_major = 0;
 static struct class *button_class;
+static struct fasync_struct *btn_async;
 
 static DECLARE_WAIT_QUEUE_HEAD(gpio_key_wait);
 
@@ -90,11 +91,19 @@ static unsigned int button_poll(struct file *fp, poll_table * wait)
 	return IsEmpty(irqBuff) ? 0 : POLLIN | POLLRDNORM;
 }
 
+int button_fasync(int fd, struct file *file, int on)
+{
+	if(fasync_helper(fd, file, on, &btn_async) >= 0)
+		return 0;
+	else 
+		return -EIO;
+}
 
 static struct file_operations button_ops = {
 	.owner = THIS_MODULE,
 	.read  = button_read, 
 	.poll  = button_poll,
+	.fasync = button_fasync,
 };
 
 static irqreturn_t myBtn_irq_request(int irq, void *dev_id)
@@ -107,6 +116,7 @@ static irqreturn_t myBtn_irq_request(int irq, void *dev_id)
 	val = (myBtn_key->gpio << 8)|val;
 	AddQ(irqBuff, val);
 	wake_up_interruptible(&gpio_key_wait);
+	kill_fasync(&btn_async, SIGIO, POLLIN);
 
 	return IRQ_HANDLED;
 }
