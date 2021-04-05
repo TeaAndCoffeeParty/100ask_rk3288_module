@@ -1,0 +1,17 @@
+/ {
+	mybutton {
+        compatible = "mybtn,btn_drv";
+        gpios = <&gpio7 9 GPIO_ACTIVE_LOW>;
+        pinctrl-names = "default";
+        pinctrl-0 = <&my_btn>;
+    };
+
+&pinctrl {
+    mybutton {
+        my_btn: my-btn {
+            rockchip,pins = <7 9 RK_FUNC_GPIO &pcfg_pull_up>;
+        };
+    };
+};
+
+};
