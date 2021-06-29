@@ -1,0 +1,6 @@
+
+
+		framebuffer@0 {
+            compatible = "mylcd";
+        };
+
