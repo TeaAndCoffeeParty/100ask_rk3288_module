@@ -1,13 +1,35 @@
 
 
-		framebuffer@0 {
-            compatible = "mylcd";
-			pinctrl-name = "default";
-			pinctrl-0 = <&mylcd_pinctrl>;
-			backlight-gpios = <&gpio1  8 GPIO_ACTIVE_HIGH>;
-			clocks = <&clks IMX6UL_CLK_LCDIF_PIX>,
+	framebuffer@0 {
+	        compatible = "mylcd";
+		pinctrl-name = "default";
+		pinctrl-0 = <&mylcd_pinctrl>;
+		backlight-gpios = <&gpio1  8 GPIO_ACTIVE_HIGH>;
+		clocks = <&clks IMX6UL_CLK_LCDIF_PIX>,
                      <&clks IMX6UL_CLK_LCDIF_APB>,
-			clock-names = "pix", "axi"; 
+		clock-names = "pix", "axi"; 
+
+		display = <&display0>;
+
+		display0: display {
+			native-mode = <&timing0>;
+			timing0: timing0_1024x768 {
+				clock-frequency=<50000000>;
+				hactive = <1024>;
+				vactive = <600>;
+				hfront-porch = <160>;
+				hback-porch = <140>;
+				hsync-len = <20>;
+				vback-porch = <20>;
+				vfront-porch = <12>;
+				vsync-len = <3>;
+
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+				pixelclk-active = <0>;
+			};
+		};
         };
 
     imx6ull-board {
