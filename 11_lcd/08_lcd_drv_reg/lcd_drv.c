@@ -72,14 +72,91 @@ static int lcd_controller_init(struct imx6ull_lcdif *lcdif,
 		struct display_timing *dt, int lcd_bpp, int fb_bpp, 
 		unsigned int fb_phy)
 {
+	int lcd_data_bus_width;
+	int fb_width;
+	int vsync_pol = 0;
+	int hsync_pol = 0;
+	int dotclk_pol = 0;
+	int de_pol = 0;
+
+
+	switch(lcd_bpp) {
+	case 16:
+		lcd_data_bus_width = 0x0;
+		break;
+	case 8:
+		lcd_data_bus_width = 0x1;
+		break;
+	case 18:
+		lcd_data_bus_width = 0x2;
+		break;
+	case 24:
+		lcd_data_bus_width = 0x3;
+		break;
+	default:
+		lcd_data_bus_width = 0x0;
+		break;
+	}
+
+	switch(fb_bpp) {
+	case 16:
+		fb_width = 0x0;
+		break;
+	case 8:
+		fb_width = 0x1;
+		break;
+	case 18:
+		fb_width = 0x2;
+		break;
+	case 24:
+	case 32:
+		fb_width = 0x3;
+		break;
+	default:
+		fb_width = 0x0;
+		break;
+	}
+
 	lcdif->CTRL = (0<<31) | (0<<30) | (0<<29) | (0<<28) | (1<<27) |
 		(0<<20) | (1<<19) | (1<<18) | (1<<17) | (0x0<<14) | (0x0<<12) |
-		(0x3<<10) | (0x3<<8) | (1<<5);
+		(lcd_data_bus_width<<10) | (fb_width<<8) | (1<<5);
 
 
-	lcdif->CTRL1 = (1<<27) | 
+	if(fb_bpp == 24 || fb_bpp == 32) {
+		lcdif->CTRL1 &= ~(0xf << 16);
+		lcdif->CTRL1 |= (0x7 << 16);
+	} else {
+		lcdif->CTRL1 |= (0xf << 16);
+	}
 
 
+	lcdif->TRANSFER_COUNT = (dt->vactive.typ << 16 )| (dt->hactive.typ<<0);
+
+
+	if(dt->flags & DISPLAY_FLAGS_HSYNC_HIGH)
+		hsync_pol = 1;
+	if(dt->flags & DISPLAY_FLAGS_VSYNC_HIGH)
+		vsync_pol = 1;
+	if(dt->flags & DISPLAY_FLAGS_DE_HIGH)
+		de_pol = 1;
+	if(dt->flags & DISPALY_FLAGS_PIXDATA_POSEDGE)
+		dotclk_pol = 1;
+
+
+	lcdif->VDCTRL0 = (0 << 29) | (vsync_pol << 27) | (hsync_pol << 25) | (dotclk_pol << 25) | (de_pol << 24) | (1<<21) |
+		(1<<20) | (dt->vsync_len.typ << 0);
+
+	lcdif->VDCTRL1 = dt->vback_porch.typ + dt->vsync_len.typ + dt->vactive.typ + dt->vfront_porch.typ;
+
+	lcdif->VDCTRL2 = (dt->hsync_len.typ << 18)| (dt->hback_porch.typ + dt->hsync_len.typ + dt->hactive.typ + dt->hfront_porch.typ) << 0;
+
+	lcdif->VDCTRL3 = (dt->hback_porch.typ + dt->hsync_len.typ) << 16 |
+		(dt->vback_porch.typ + dt->vsync_len.typ << 0);
+
+	lcdif->VDCTRL4 = (1 << 18) | (dt->hactive.typ);
+
+	lcdif->CUR_BUF = fb_phy;
+	lcdif->NEXT_BUF = fb_phy;
 }
 
 static int mylcd_probe(struct platform_device *pdev)
