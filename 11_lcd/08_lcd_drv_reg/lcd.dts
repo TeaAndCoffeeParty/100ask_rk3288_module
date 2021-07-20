@@ -1,7 +1,8 @@
 
 
-	framebuffer@0 {
-	        compatible = "mylcd";
+	framebuffer-mylcd {
+        compatible = "mylcd";
+		reg = <0x021c8000 0x4000>;
 		pinctrl-name = "default";
 		pinctrl-0 = <&mylcd_pinctrl>;
 		backlight-gpios = <&gpio1  8 GPIO_ACTIVE_HIGH>;

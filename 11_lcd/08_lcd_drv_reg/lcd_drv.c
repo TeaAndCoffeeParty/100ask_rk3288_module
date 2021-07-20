@@ -68,6 +68,11 @@ static struct fb_ops myfb_ops = {
 	.fb_imageblit	= cfb_imageblit,
 };
 
+static void lcd_controller_enable(struct imx6ull_lcdif *lcdif)
+{
+	lcdif->CTRL |= (1<<30);
+}
+
 static int lcd_controller_init(struct imx6ull_lcdif *lcdif, 
 		struct display_timing *dt, int lcd_bpp, int fb_bpp, 
 		unsigned int fb_phy)
@@ -168,6 +173,9 @@ static int mylcd_probe(struct platform_device *pdev)
 	int ret;
 	int width, bits_per_pixel; 
 	struct display_timings *timings = NULL;
+	struct display_timings *dt = NULL;
+	struct imx6ull_lcdif *lcdif;
+	struct resource *res;
 
 	display_np = of_parse_phandle(pdev->dev.of_node, "display", 0);
 
@@ -178,10 +186,10 @@ static int mylcd_probe(struct platform_device *pdev)
                    &bits_per_pixel);
 
 	timings = of_get_display_timings(display_np);
+	dt = timings->timings[timings->native_mode];
 
 	timings_np = of_find_node_by_name(display_np,
                       "display-timings");
-
 
 	/* get gpio from devicetree */
 	bl_gpio = gpiod_get(&pdev->dev, "backlight", 0);
@@ -199,7 +207,7 @@ static int mylcd_probe(struct platform_device *pdev)
 	clk_axi = devm_clk_get(pdev->dev, "axi");
 
 	/* set clock rate */
-	clk_set_rate(clk_pix, 50000000); //PICOS2KHZ(fb_info->var.pixclock) * 1000U);
+	clk_set_rate(clk_pix, dt->pixelclock.typ); 
 
 	clk_prepare_enable(clk_pix);
 	clk_prepare_enable(clk_axi);
@@ -211,8 +219,8 @@ static int mylcd_probe(struct platform_device *pdev)
 
 	/* 2. set */
 	/* 2.1 var resolution  color formate */
-	myfb_info->var.xres = 500;
-	myfb_info->var.yres = 300;
+	myfb_info->var.xres = dt->hactive.typ;
+	myfb_info->var.yres = dt->vactive.typ;
 	myfb_info->var.bits_per_pixel = 16;		/* rgb565 */
 
 	myfb_info->var.red.offset   = 11;
@@ -221,8 +229,8 @@ static int mylcd_probe(struct platform_device *pdev)
 	myfb_info->var.green.length = 6;
 	myfb_info->var.blue.offset  = 0;
 	myfb_info->var.blue.length  = 5;
-	myfb_info->var.xres_virtual = 500;
-	myfb_info->var.yres_virtual = 300;
+	myfb_info->var.xres_virtual = dt->hactive.typ;
+	myfb_info->var.yres_virtual = dt->vactive.typ;
 
 	/* 2.2 fix */
 	strcmp(myfb_info->fix.id, "mylcd");
@@ -251,11 +259,15 @@ static int mylcd_probe(struct platform_device *pdev)
 	ret = register_framebuffer(myfb_info);
 
 	/* 4. hardware opeation */
-	mylcd_regs = ioremap(0x21c8000, sizeof(struct lcd_regs));
-	mylcd_regs->fb_base_phys = phy_addr;
-	mylcd_regs->fb_xres = 500;
-	mylcd_regs->fb_yres = 300;
-	mylcd_regs->fb_bpp = 16;
+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+
+	lcdif = devm_ioremap_resource(&pdev->dev, res);
+
+	lcd_controller_init(lcdif, dt, bits_per_pixel, 16,  phy_addr);
+
+	lcd_controller_enable(lcdif);
+
+	gpiod_set_value(bl_gpio, 1);
 
 	return 0;
 }
