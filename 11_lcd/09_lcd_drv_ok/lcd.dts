@@ -1,0 +1,70 @@
+
+
+	framebuffer-mylcd {
+        compatible = "mylcd";
+		reg = <0x021c8000 0x4000>;
+		pinctrl-name = "default";
+		pinctrl-0 = <&mylcd_pinctrl>;
+		backlight-gpios = <&gpio1  8 GPIO_ACTIVE_HIGH>;
+		clocks = <&clks IMX6UL_CLK_LCDIF_PIX>,
+                     <&clks IMX6UL_CLK_LCDIF_APB>,
+		clock-names = "pix", "axi"; 
+
+		display = <&display0>;
+
+		display0: display {
+			native-mode = <&timing0>;
+			timing0: timing0_1024x768 {
+				clock-frequency=<50000000>;
+				hactive = <1024>;
+				vactive = <600>;
+				hfront-porch = <160>;
+				hback-porch = <140>;
+				hsync-len = <20>;
+				vback-porch = <20>;
+				vfront-porch = <12>;
+				vsync-len = <3>;
+
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+				pixelclk-active = <0>;
+			};
+		};
+        };
+
+    imx6ull-board {
+        mylcd_pinctrl: mylcd_pingrp {                /*!< Function assigned for the core: Cortex-A7[ca7] */
+            fsl,pins = <
+                MX6UL_PAD_GPIO1_IO08__GPIO1_IO08           0x000010B0
+                MX6UL_PAD_LCD_CLK__LCDIF_CLK               0x000010B0
+                MX6UL_PAD_LCD_DATA00__LCDIF_DATA00         0x000010B0
+                MX6UL_PAD_LCD_DATA01__LCDIF_DATA01         0x000010B0
+                MX6UL_PAD_LCD_DATA02__LCDIF_DATA02         0x000010B0
+                MX6UL_PAD_LCD_DATA03__LCDIF_DATA03         0x000010B0
+                MX6UL_PAD_LCD_DATA04__LCDIF_DATA04         0x000010B0
+                MX6UL_PAD_LCD_DATA05__LCDIF_DATA05         0x000010B0
+                MX6UL_PAD_LCD_DATA06__LCDIF_DATA06         0x000010B0
+                MX6UL_PAD_LCD_DATA07__LCDIF_DATA07         0x000010B0
+                MX6UL_PAD_LCD_DATA08__LCDIF_DATA08         0x000010B0
+                MX6UL_PAD_LCD_DATA09__LCDIF_DATA09         0x000010B0
+                MX6UL_PAD_LCD_DATA10__LCDIF_DATA10         0x000010B0
+                MX6UL_PAD_LCD_DATA11__LCDIF_DATA11         0x000010B0
+                MX6UL_PAD_LCD_DATA12__LCDIF_DATA12         0x000010B0
+                MX6UL_PAD_LCD_DATA13__LCDIF_DATA13         0x000010B0
+                MX6UL_PAD_LCD_DATA14__LCDIF_DATA14         0x000010B0
+                MX6UL_PAD_LCD_DATA15__LCDIF_DATA15         0x000010B0
+                MX6UL_PAD_LCD_DATA16__LCDIF_DATA16         0x000010B0
+                MX6UL_PAD_LCD_DATA17__LCDIF_DATA17         0x000010B0
+                MX6UL_PAD_LCD_DATA18__LCDIF_DATA18         0x000010B0
+                MX6UL_PAD_LCD_DATA19__LCDIF_DATA19         0x000010B0
+                MX6UL_PAD_LCD_DATA20__LCDIF_DATA20         0x000010B0
+                MX6UL_PAD_LCD_DATA21__LCDIF_DATA21         0x000010B0
+                MX6UL_PAD_LCD_DATA22__LCDIF_DATA22         0x000010B0
+                MX6UL_PAD_LCD_DATA23__LCDIF_DATA23         0x000010B0
+                MX6UL_PAD_LCD_ENABLE__LCDIF_ENABLE         0x000010B0
+                MX6UL_PAD_LCD_HSYNC__LCDIF_HSYNC           0x000010B0
+                MX6UL_PAD_LCD_VSYNC__LCDIF_VSYNC           0x000010B0
+            >;
+        };
+    };
