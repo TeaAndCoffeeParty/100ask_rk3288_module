@@ -300,7 +300,7 @@ static struct platform_driver mylcd_driver = {
 	.probe = mylcd_probe,
 	.remove = mylcd_remove,
 	.driver = {
-		.name = "mylcd",
+		.name = "chen,mylcd",
 		.of_match_table = mylcd_of_match,
 	},
 };
