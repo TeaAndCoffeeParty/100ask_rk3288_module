@@ -183,21 +183,44 @@ static int mylcd_probe(struct platform_device *pdev)
 	struct resource *res;
 
 	display_np = of_parse_phandle(pdev->dev.of_node, "display", 0);
+	if(!display_np) {
+		dev_err(&pdev->dev, "missing property display \n");
+		return -EINVAL;
+	}
 
 	/* get common info */
 	ret = of_property_read_u32(display_np, "bus-width", &width);
+	if(ret) {
+		dev_err(&pdev->dev, "Not found bus-width\n");
+		return -EINVAL;
+	}
 
 	ret = of_property_read_u32(display_np, "bits-per-pixel",
                    &bits_per_pixel);
+	if(ret) {
+		dev_err(&pdev->dev, "Not found bits-per-pixel\n");
+		return -EINVAL;
+	}
 
 	timings = of_get_display_timings(display_np);
+	if (!timings) {
+		dev_err(&pdev->dev, "failed to get display timings\n");
+		return -EINVAL;
+	}
 	dt = timings->timings[timings->native_mode];
 
-	timings_np = of_find_node_by_name(display_np,
-                      "display-timings");
+	timings_np = of_find_node_by_name(display_np, "display-timings");
+	if(IS_ERR(timings_np)) {
+		dev_err(&pdev->dev, "failed to get display-timings\n");
+		return -1;
+	}
 
 	/* get gpio from devicetree */
 	bl_gpio = gpiod_get(&pdev->dev, "backlight", 0);
+	if(IS_ERR(bl_gpio)) {
+		dev_err(&pdev->dev, "failed to get gpio backlight \n");
+		return -1;
+	}
 	
 	/* config bl_gpio output */
 	gpiod_direction_output(bl_gpio, 1);
@@ -208,8 +231,16 @@ static int mylcd_probe(struct platform_device *pdev)
 
 	/* get clock from devicetree */
 	clk_pix = devm_clk_get(&pdev->dev, "pix");
+	if(IS_ERR(clk_pix)) {
+		dev_err(&pdev->dev, "failed to get pix \n");
+		return -1;
+	}
 
 	clk_axi = devm_clk_get(&pdev->dev, "axi");
+	if(IS_ERR(clk_axi)) {
+		dev_err(&pdev->dev, "failed to get axi \n");
+		return -1;
+	}
 
 	/* set clock rate */
 	clk_set_rate(clk_pix, dt->pixelclock.typ); 
@@ -292,7 +323,7 @@ static int mylcd_remove(struct platform_device *pdev)
 }
 
 static const struct of_device_id mylcd_of_match[] = {
-	{ .compatible = "mylcd", },
+	{ .compatible = "chen,mylcd", },
 	{ },
 };
 
@@ -300,7 +331,7 @@ static struct platform_driver mylcd_driver = {
 	.probe = mylcd_probe,
 	.remove = mylcd_remove,
 	.driver = {
-		.name = "chen,mylcd",
+		.name = "drv,mylcd",
 		.of_match_table = mylcd_of_match,
 	},
 };
