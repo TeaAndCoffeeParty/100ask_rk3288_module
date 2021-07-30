@@ -41,7 +41,7 @@
 		pwms = <&pwm1 0 5000000>;
 		brightness-levels = <0 4 8 16 32 64 128 255>;
 		default-brightness-level = <6>;
-		status = "okay";
+		status = "disabled";
 	};
 
 	
@@ -59,22 +59,22 @@
 		display = <&displayF>;
 
 		displayF: display {
-			bits-per-pixel = <24>;
+			bits-per-pixel = <16>;
 			bus-width = <24>;
 
 			display-timings {
 				native-mode = <&timingF>;
 
-				timingF: timing0_1024x768 {
-					clock-frequency=<50000000>;
-					hactive = <1024>;
-					vactive = <600>;
-					hfront-porch = <160>;
-					hback-porch = <140>;
-					hsync-len = <20>;
-					vback-porch = <20>;
-					vfront-porch = <12>;
-					vsync-len = <3>;
+				timingF: timing0_800x480 {
+					clock-frequency=<27000000>;
+					hactive = <800>;
+					vactive = <480>;
+					hfront-porch = <22>;
+					hback-porch = <46>;
+					hsync-len = <1>;
+					vback-porch = <23>;
+					vfront-porch = <22>;
+					vsync-len = <1>;
 
 					hsync-active = <0>;
 					vsync-active = <0>;
