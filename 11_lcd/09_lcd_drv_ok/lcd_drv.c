@@ -74,7 +74,7 @@ static struct fb_ops myfb_ops = {
 
 static void lcd_controller_enable(struct imx6ull_lcdif *lcdif)
 {
-	lcdif->CTRL |= (1<<30);
+	lcdif->CTRL |= (1<<0);
 }
 
 static int lcd_controller_init(struct imx6ull_lcdif *lcdif, 
