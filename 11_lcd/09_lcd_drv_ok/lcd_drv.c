@@ -88,7 +88,6 @@ static int lcd_controller_init(struct imx6ull_lcdif *lcdif,
 	int dotclk_pol = 0;
 	int de_pol = 0;
 
-
 	switch(lcd_bpp) {
 	case 16:
 		lcd_data_bus_width = 0x0;
@@ -126,10 +125,14 @@ static int lcd_controller_init(struct imx6ull_lcdif *lcdif,
 		break;
 	}
 
+	/*
 	lcdif->CTRL = (0<<31) | (0<<30) | (0<<29) | (0<<28) | (1<<27) |
 		(0<<20) | (1<<19) | (1<<18) | (1<<17) | (0x0<<14) | (0x0<<12) |
 		(lcd_data_bus_width<<10) | (fb_width<<8) | (1<<5);
+	*/
 
+	lcdif->CTRL = (0<<30) | (0<<29) | (0<<28) | (1<<19) | (1<<17) | (lcd_data_bus_width << 10) |\
+			  (fb_width << 8) | (1<<5);
 
 	if(fb_bpp == 24 || fb_bpp == 32) {
 		lcdif->CTRL1 &= ~(0xf << 16);
@@ -152,7 +155,7 @@ static int lcd_controller_init(struct imx6ull_lcdif *lcdif,
 		dotclk_pol = 1;
 
 
-	lcdif->VDCTRL0 = (0 << 29) | (vsync_pol << 27) | (hsync_pol << 25) | (dotclk_pol << 25) | (de_pol << 24) | (1<<21) |
+	lcdif->VDCTRL0 = (1 << 28) | (vsync_pol << 27) | (hsync_pol << 26) | (dotclk_pol << 25) | (de_pol << 24) | (1<<21) |
 		(1<<20) | (dt->vsync_len.typ << 0);
 
 	lcdif->VDCTRL1 = dt->vback_porch.typ + dt->vsync_len.typ + dt->vactive.typ + dt->vfront_porch.typ;
@@ -173,7 +176,6 @@ static int lcd_controller_init(struct imx6ull_lcdif *lcdif,
 static int mylcd_probe(struct platform_device *pdev)
 {
 	struct device_node *display_np;
-	struct device_node *timings_np;
 	int ret;
 	dma_addr_t phy_addr;	
 	int width, bits_per_pixel; 
@@ -195,8 +197,7 @@ static int mylcd_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	ret = of_property_read_u32(display_np, "bits-per-pixel",
-                   &bits_per_pixel);
+	ret = of_property_read_u32(display_np, "bits-per-pixel", &bits_per_pixel);
 	if(ret) {
 		dev_err(&pdev->dev, "Not found bits-per-pixel\n");
 		return -EINVAL;
@@ -208,12 +209,6 @@ static int mylcd_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 	dt = timings->timings[timings->native_mode];
-
-	timings_np = of_find_node_by_name(display_np, "display-timings");
-	if(IS_ERR(timings_np)) {
-		dev_err(&pdev->dev, "failed to get display-timings\n");
-		return -1;
-	}
 
 	/* get gpio from devicetree */
 	bl_gpio = gpiod_get(&pdev->dev, "backlight", 0);
@@ -276,8 +271,7 @@ static int mylcd_probe(struct platform_device *pdev)
 	}
 
 	/* 2.3 fb virtual address */
-	myfb_info->screen_base =  dma_alloc_writecombine(NULL, myfb_info->fix.smem_len,	
-			&phy_addr, GFP_KERNEL);	 	/* virtual address */
+	myfb_info->screen_base =  dma_alloc_wc(NULL, myfb_info->fix.smem_len,	&phy_addr, GFP_KERNEL);	 	/* virtual address */
 	myfb_info->fix.smem_start = phy_addr;		/* physicsal address */
 	myfb_info->fix.type = FB_TYPE_PACKED_PIXELS;
 	myfb_info->fix.visual = FB_VISUAL_TRUECOLOR;
@@ -313,9 +307,6 @@ static int mylcd_remove(struct platform_device *pdev)
 	iounmap(mylcd_regs);
 
 	unregister_framebuffer(myfb_info);
-
-	dma_free_writecombine(NULL, PAGE_ALIGN(myfb_info->fix.smem_len),
-			myfb_info->screen_base, myfb_info->fix.smem_start);
 
 	framebuffer_release(myfb_info);
 
