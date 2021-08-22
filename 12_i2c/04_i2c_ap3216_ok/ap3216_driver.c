@@ -11,12 +11,12 @@ static struct class *ap3216_class;
 static struct i2c_client *ap3216_client;
 
 static const struct of_device_id of_match_ids_ap3216[] = {
-	{ .compatible = "com_name,chip_name",	.data = NULL },
+	{ .compatible = "lite-on,ap3216c",	.data = NULL },
 	{ /* END OF LIST */ }
 };
 
 static const struct i2c_device_id ap3216_ids[] = {
-	{ "chip_name", (kernel_ulong_t)NULL },
+	{ "ap3216c", (kernel_ulong_t)NULL },
 	{ /* END OF LIST */ }
 };
 
@@ -25,6 +25,7 @@ int ap3216_open(struct inode *inode, struct file *file)
 	i2c_smbus_write_byte_data(ap3216_client, 0, 0x4);
 	mdelay(20);
 	i2c_smbus_write_byte_data(ap3216_client, 0, 0x3);
+	mdelay(250);
 	return 0;
 }
 
@@ -64,6 +65,7 @@ static struct file_operations ap3216_ops = {
 
 int ap3216_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
+	printk(KERN_ERR "ap3216 %s %d.\n", __FUNCTION__, __LINE__);
 	ap3216_client = client;
 
 	ap3216_major = register_chrdev(0, "ap3216", &ap3216_ops);
