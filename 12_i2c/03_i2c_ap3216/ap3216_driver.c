@@ -37,14 +37,17 @@ ssize_t ap3216_read(struct file *file, char __user *buf, size_t size, loff_t *of
 	if(size != 6)
 		return -EINVAL;
 
+	/* read IR */
 	val = i2c_smbus_read_word_data(ap3216_client, 0xA);
 	kernel_buf[0] = val & 0xff;
 	kernel_buf[1] = (val >> 8) & 0xff;
 
+	/* read light intensity */
 	val = i2c_smbus_read_word_data(ap3216_client, 0xC);
 	kernel_buf[2] = val & 0xff;
 	kernel_buf[3] = (val >> 8) & 0xff;
 
+	/* read distance */
 	val = i2c_smbus_read_word_data(ap3216_client, 0xE);
 	kernel_buf[4] = val & 0xff;
 	kernel_buf[5] = (val >> 8) & 0xff;
@@ -52,16 +55,11 @@ ssize_t ap3216_read(struct file *file, char __user *buf, size_t size, loff_t *of
 	err = copy_to_user(buf, kernel_buf, size);
 	return size;
 }
-//ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);
-//int (*release) (struct inode *, struct file *);
-
 
 static struct file_operations ap3216_ops = {
 	.owner = THIS_MODULE,
 	.open  = ap3216_open,
-//	.write = ap3216_write,
 	.read  = ap3216_read,
-//	.close = ap3216_close,
 };
 
 int ap3216_probe(struct i2c_client *client, const struct i2c_device_id *id)

@@ -1,5 +1,5 @@
 
-KERN_DIR = /home/book/Documents/100ask_firefly-rk3288/linux-4.4
+KERN_DIR = /home/book/imx6ull/linux-4.9.88
 
 all:
 	make -C $(KERN_DIR) M=`pwd` modules
