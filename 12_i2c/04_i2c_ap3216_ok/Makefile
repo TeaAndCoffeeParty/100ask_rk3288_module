@@ -10,4 +10,4 @@ clean:
 	rm -rf modules.order
 	rm -f ap3216_test
 
-obj-m += ap3216_driver.o
+obj-m += ap3216_driver.o ap3216_client.o
