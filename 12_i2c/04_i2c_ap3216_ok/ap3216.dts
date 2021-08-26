@@ -1,0 +1,8 @@
+
+
+&i2c1 {
+	ap3216c@1e {
+		compatible = "lite-on,ap3216c";
+		reg = <0x1e>;
+	};
+};
