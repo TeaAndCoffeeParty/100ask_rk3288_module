@@ -1,17 +1,50 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/platform_device.h>
+#include <linux/i2c.h>
+#include <linux/slab.h>
 
 static struct i2c_adapter *g_adapter;
+
+static unsigned char eeprom_buffer[512];
+static int eeprom_cur_addr = 0;
+
+static void eeprom_emulate_xfer(struct i2c_adapter *i2c_adap, struct i2c_msg *msg)
+{
+	int i;
+	if(msg->flags | I2C_M_RD) {
+		for(i=0;i<msg->len;i++) {
+			msg->buf[i] = eeprom_buffer[eeprom_cur_addr++];
+			if(eeprom_cur_addr == 512)
+				eeprom_cur_addr = 0;
+		}
+	} else {
+		if(msg->len >= 1) {
+			eeprom_cur_addr = msg->buf[0];
+			for(i=0;i<msg->len-1;i++) {
+				eeprom_buffer[eeprom_cur_addr++] = msg->buf[i];
+				if(eeprom_cur_addr == 512)
+					eeprom_cur_addr = 0;
+			}
+		}
+	}
+}
 
 static int i2c_bus_virtual_xfer(struct i2c_adapter *i2c_adap,
 		struct i2c_msg msgs[], int num)
 {
 	int i;
+	//emulate eeprom addr=0x50
 	for(i=0;i<num;i++) {
 		// do transfer msgs[i]
+		if(msgs[i].addr == 0x50) {
+			eeprom_emulate_xfer(i2c_adap, &msgs[i]);
+		} else {
+			i = -EIO;
+			break;
+		}
 	}
-	return num;
+	return i;
 }
 
 static u32 i2c_bus_virtual_func(struct i2c_adapter *adap)
@@ -21,7 +54,7 @@ static u32 i2c_bus_virtual_func(struct i2c_adapter *adap)
 }
 
 const struct i2c_algorithm i2c_bus_virtual_algo = {
-	.master_xfer = ,
+	.master_xfer = i2c_bus_virtual_xfer,
 	.functionality = i2c_bus_virtual_func,
 };
 
@@ -79,8 +112,8 @@ static void i2c_bus_virtual_exit(void)
 	platform_driver_unregister(&i2c_bus_virtual_driver);
 }
 
-moudle_init(i2c_bus_virtual_init);
+module_init(i2c_bus_virtual_init);
 module_exit(i2c_bus_virtual_exit);
 
-MOUDLE_AUTHOR("tuo");
-MODULE_LINCESE("GPL");
+MODULE_AUTHOR("tuo");
+MODULE_LICENSE("GPL");
